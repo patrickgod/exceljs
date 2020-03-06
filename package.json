@@ -1,16 +1,13 @@
 {
-  "name": "exceljs",
-  "version": "1.15.0",
+  "name": "exceljs-fork-pg",
+  "version": "1.15.1",
   "description": "Excel Workbook Manager - Read and Write xlsx and csv Files.",
   "private": false,
   "license": "MIT",
-  "author": {
-    "name": "Guyon Roche",
-    "email": "guyon@live.com"
-  },
+  "author": "Guyon Roche <guyon@live.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/exceljs/exceljs.git"
+    "url": "git+https://github.com/exceljs/exceljs.git"
   },
   "engines": {
     "node": ">=6.0.0"
@@ -41,7 +38,7 @@
     "lint": "eslint --format node_modules/eslint-friendly-formatter .",
     "lint:fix": "prettier-eslint --write \"**/*.js\"",
     "clean": "rm -rf build/ && rm -rf dist",
-    "build": "./node_modules/.bin/grunt build",
+    "build": "grunt build",
     "preversion": "npm run clean && npm run build && npm run test:full",
     "postversion": "git push --no-verify && git push --tags --no-verify"
   },
@@ -128,5 +125,13 @@
     "request": "^2.88.0",
     "semver": "^5.6.0",
     "uglify-js": "^3.4.9"
+  },
+  "bugs": {
+    "url": "https://github.com/exceljs/exceljs/issues"
+  },
+  "homepage": "https://github.com/exceljs/exceljs#readme",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
   }
 }
