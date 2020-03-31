@@ -48,7 +48,11 @@ describe('WorkbookWriter', () => {
       };
       const wb = new ExcelJS.stream.xlsx.WorkbookWriter(options);
       const ws = wb.addWorksheet('Hello');
-      ws.getCell('A1').value = {formula: 'ROW()+COLUMN()', ref: 'A1:B2', result: 2};
+      ws.getCell('A1').value = {
+        formula: 'ROW()+COLUMN()',
+        ref: 'A1:B2',
+        result: 2,
+      };
       ws.getCell('B1').value = {sharedFormula: 'A1', result: 3};
       ws.getCell('A2').value = {sharedFormula: 'A1', result: 3};
       ws.getCell('B2').value = {sharedFormula: 'A1', result: 4};
@@ -392,7 +396,7 @@ describe('WorkbookWriter', () => {
         filename: TEST_XLSX_FILE_NAME,
         useStyles: true,
         zip: {
-          zlib: {level: 9},// Sets the compression level.
+          zlib: {level: 9}, // Sets the compression level.
         },
       };
       const wb = testUtils.createTestBook(
@@ -424,7 +428,12 @@ describe('WorkbookWriter', () => {
       const note = {
         texts: [
           {
-            font: {size: 12, color: {argb: 'FFFF6600'}, name: 'Calibri', scheme: 'minor'},
+            font: {
+              size: 12,
+              color: {argb: 'FFFF6600'},
+              name: 'Calibri',
+              scheme: 'minor',
+            },
             text: 'seven',
           },
         ],
@@ -496,6 +505,29 @@ describe('WorkbookWriter', () => {
       const image = wb2.getImage(backgroundId2);
       const imageData = await fsReadFileAsync(IMAGE_FILENAME);
       expect(Buffer.compare(imageData, image.buffer)).to.equal(0);
+    });
+
+    it('with conditional formatting', async () => {
+      const options = {
+        filename: TEST_XLSX_FILE_NAME,
+        useStyles: true,
+        useSharedStrings: true,
+      };
+      const wb = testUtils.createTestBook(
+        new ExcelJS.stream.xlsx.WorkbookWriter(options),
+        'xlsx',
+        ['conditionalFormatting']
+      );
+
+      return wb
+        .commit()
+        .then(() => {
+          const wb2 = new ExcelJS.Workbook();
+          return wb2.xlsx.readFile(TEST_XLSX_FILE_NAME);
+        })
+        .then(wb2 => {
+          testUtils.checkTestBook(wb2, 'xlsx', ['conditionalFormatting']);
+        });
     });
   });
 });

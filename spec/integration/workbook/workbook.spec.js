@@ -63,7 +63,6 @@ describe('Workbook', () => {
           });
       });
 
-
       it('xlsx file with fast compression', () => {
         const wb = testUtils.createTestBook(new ExcelJS.Workbook(), 'xlsx');
 
@@ -253,7 +252,10 @@ describe('Workbook', () => {
     it('shared formula', () => {
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet('Hello');
-      ws.fillFormula('A1:B2', 'ROW()+COLUMN()', [[2, 3], [3, 4]]);
+      ws.fillFormula('A1:B2', 'ROW()+COLUMN()', [
+        [2, 3],
+        [3, 4],
+      ]);
       return wb.xlsx
         .writeFile(TEST_XLSX_FILE_NAME)
         .then(() => {
@@ -410,7 +412,10 @@ describe('Workbook', () => {
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet();
 
-      ws.columns = [{key: 'id', width: 10}, {key: 'name', width: 32}];
+      ws.columns = [
+        {key: 'id', width: 10},
+        {key: 'name', width: 32},
+      ];
 
       ws.addRow({id: 1, name: ''});
 
@@ -456,6 +461,42 @@ describe('Workbook', () => {
         })
         .then(wb2 => {
           testUtils.checkTestBook(wb2, 'csv');
+        });
+    });
+
+    it('CSV file and its configuration', function() {
+      this.timeout(5000);
+      const writeOptions = {
+        dateFormat: 'DD/MM/YYYY HH:mm:ss',
+        dateUTC: false,
+        encoding: 'utf-8',
+        includeEmptyRows: false,
+        sheetName: 'sheet1',
+        formatterOptions: {
+          delimiter: '\t',
+          quote: false,
+        },
+      };
+      const readOptions = {
+        dateFormats: ['DD/MM/YYYY HH:mm:ss'],
+        sheetName: 'sheet1',
+        parserOptions: {
+          delimiter: '\t',
+          quote: false,
+        },
+      };
+      const wb = testUtils.createTestBook(new ExcelJS.Workbook(), 'csv');
+
+      return wb.csv
+        .writeFile(TEST_CSV_FILE_NAME, writeOptions)
+        .then(() => {
+          const wb2 = new ExcelJS.Workbook();
+          return wb2.csv
+            .readFile(TEST_CSV_FILE_NAME, readOptions)
+            .then(() => wb2);
+        })
+        .then(wb2 => {
+          testUtils.checkTestBook(wb2, 'csv', false, writeOptions);
         });
     });
 
@@ -578,32 +619,32 @@ describe('Workbook', () => {
 
     describe('Duplicate Rows', () => {
       it('Duplicate rows with styles properly', () => {
-        const fileDuplicateRowTestFile = './spec/integration/data/duplicateRowTest.xlsx';
+        const fileDuplicateRowTestFile =
+          './spec/integration/data/duplicateRowTest.xlsx';
         const wb = new ExcelJS.Workbook();
-        return wb.xlsx
-          .readFile(fileDuplicateRowTestFile).then(() => {
-            const ws = wb.getWorksheet('duplicateTest');
+        return wb.xlsx.readFile(fileDuplicateRowTestFile).then(() => {
+          const ws = wb.getWorksheet('duplicateTest');
 
-            ws.getCell('A1').value = 'OneInfo';
-            ws.getCell('A2').value = 'TwoInfo';
-            ws.duplicateRow(1,2);
+          ws.getCell('A1').value = 'OneInfo';
+          ws.getCell('A2').value = 'TwoInfo';
+          ws.duplicateRow(1, 2);
 
-            return wb.xlsx
-              .writeFile(TEST_XLSX_FILE_NAME)
-              .then(() => {
-                const wb2 = new ExcelJS.Workbook();
-                return wb2.xlsx.readFile(TEST_XLSX_FILE_NAME);
-              })
-              .then(wb2 => {
-                const ws2 = wb2.getWorksheet('duplicateTest');
+          return wb.xlsx
+            .writeFile(TEST_XLSX_FILE_NAME)
+            .then(() => {
+              const wb2 = new ExcelJS.Workbook();
+              return wb2.xlsx.readFile(TEST_XLSX_FILE_NAME);
+            })
+            .then(wb2 => {
+              const ws2 = wb2.getWorksheet('duplicateTest');
 
-                expect(ws2.getCell('A2').value).to.equal('OneInfo');
-                expect(ws2.getCell('A2').style).to.equal(ws2.getCell('A1').style);
-                expect(ws2.getCell('A3').value).to.equal('OneInfo');
-                expect(ws2.getCell('A3').style).to.equal(ws2.getCell('A1').style);
-                expect(ws2.getCell('A4').value).to.be.null();
-              });
-          });
+              expect(ws2.getCell('A2').value).to.equal('OneInfo');
+              expect(ws2.getCell('A2').style).to.equal(ws2.getCell('A1').style);
+              expect(ws2.getCell('A3').value).to.equal('OneInfo');
+              expect(ws2.getCell('A3').style).to.equal(ws2.getCell('A1').style);
+              expect(ws2.getCell('A4').value).to.be.null();
+            });
+        });
       });
 
       it('Duplicate rows replacing properly', () => {
@@ -613,7 +654,7 @@ describe('Workbook', () => {
         ws.getCell('A2').value = 'TwoInfo';
         ws.getCell('A3').value = 'ThreeInfo';
         ws.getCell('A4').value = 'FourInfo';
-        ws.duplicateRow(1,2,false);
+        ws.duplicateRow(1, 2, false);
 
         return wb.xlsx
           .writeFile(TEST_XLSX_FILE_NAME)
@@ -630,7 +671,7 @@ describe('Workbook', () => {
             expect(ws2.getCell('A4').value).to.equal('FourInfo');
           });
       });
-      
+
       it('Duplicate rows shifting properly', () => {
         const wb = new ExcelJS.Workbook();
         const ws = wb.addWorksheet('duplicateTest');
@@ -638,7 +679,7 @@ describe('Workbook', () => {
         ws.getCell('A2').value = 'TwoInfo';
         ws.getCell('A3').value = 'ThreeInfo';
         ws.getCell('A4').value = 'FourInfo';
-        ws.duplicateRow(1,2,true);
+        ws.duplicateRow(1, 2, true);
 
         return wb.xlsx
           .writeFile(TEST_XLSX_FILE_NAME)
@@ -663,8 +704,8 @@ describe('Workbook', () => {
         ws.getCell('A2').value = 'TwoInfo';
         ws.getRow(1).height = 25;
         ws.getRow(2).height = 15;
-        ws.duplicateRow(1,1,true);
-        
+        ws.duplicateRow(1, 1, true);
+
         return wb.xlsx
           .writeFile(TEST_XLSX_FILE_NAME)
           .then(() => {
@@ -681,7 +722,6 @@ describe('Workbook', () => {
           });
       });
     });
-
 
     describe('Merge Cells', () => {
       it('serialises and deserialises properly', () => {
@@ -877,7 +917,7 @@ describe('Workbook', () => {
     try {
       await wb.xlsx.load({});
       expect.fail('should fail for given argument');
-    } catch(e) {
+    } catch (e) {
       expect(e.message).to.equal(
         'Chunk must be one of type String, Buffer or StringBuf.'
       );

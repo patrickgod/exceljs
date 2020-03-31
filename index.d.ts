@@ -406,8 +406,8 @@ export interface Cell extends Style, Address {
 	readonly fullAddress: {
 		sheetName: string;
 		address: string;
-		row: Row;
-		col: Column;
+		row: string;
+		col: string;
 	};
 	model: CellModel;
 	/**
@@ -1310,14 +1310,79 @@ export interface Xlsx {
 	write(stream: import('stream').Stream, options?: Partial<XlsxWriteOptions>): Promise<void>;
 }
 
+// https://c2fo.io/fast-csv/docs/parsing/options
+
+type HeaderArray = (string | undefined | null)[];
+type HeaderTransformFunction = (headers: HeaderArray) => HeaderArray;
+export interface FastCsvParserOptionsArgs {
+	objectMode: boolean;
+	delimiter: string;
+	quote: string | null;
+	escape: string;
+	headers: boolean | HeaderTransformFunction | HeaderArray;
+	renameHeaders: boolean;
+	ignoreEmpty: boolean;
+	comment: string;
+	strictColumnHandling: boolean;
+	discardUnmappedColumns: boolean;
+	trim: boolean;
+	ltrim: boolean;
+	rtrim: boolean;
+	encoding: string;
+	maxRows: number;
+	skipLines: number;
+	skipRows: number;
+}
+
+interface QuoteColumnMap {
+	[s: string]: boolean;
+}
+declare type QuoteColumns = boolean | boolean[] | QuoteColumnMap;
+
+interface RowMap {
+	[key: string]: any;
+}
+declare type RowHashArray = [string, any][];
+declare type RowArray = string[];
+declare type Rows = RowArray | RowMap | RowHashArray;
+declare type RowTransformCallback = (error?: Error | null, row?: Rows) => void;
+interface RowTransformFunction {
+	(row: Rows, callback: RowTransformCallback): void;
+	(row: Rows): Rows;
+}
+
+// https://c2fo.io/fast-csv/docs/formatting/options/
+export interface FastCsvFormatterOptionsArgs {
+	objectMode: boolean;
+	delimiter: string;
+	rowDelimiter: string;
+	quote: string | boolean;
+	escape: string;
+	quoteColumns: QuoteColumns;
+	quoteHeaders: QuoteColumns;
+	headers: null | boolean | string[];
+	includeEndRowDelimiter: boolean;
+	writeBOM: boolean;
+	transform: RowTransformFunction;
+	alwaysWriteHeaders: boolean;
+}
+
 export interface CsvReadOptions {
 	dateFormats: string[];
 	map(value: any, index: number): any;
+	sheetName: string;
+	parserOptions: Partial<FastCsvParserOptionsArgs>;
 }
 
 export interface CsvWriteOptions {
 	dateFormat: string;
 	dateUTC: boolean;
+	sheetName: string;
+	sheetId: number;
+	encoding: string;
+	map(value: any, index: number): any;
+	includeEmptyRows: boolean;
+	formatterOptions: Partial<FastCsvFormatterOptionsArgs>;
 }
 
 export interface Csv {
@@ -1334,12 +1399,12 @@ export interface Csv {
 	/**
 	 * Create input stream for reading
 	 */
-	createInputStream(): import('events').EventEmitter;
+	createInputStream(options?: Partial<CsvReadOptions>): import('events').EventEmitter;
 
 	/**
 	 * write to a buffer
 	 */
-	writeBuffer(): Promise<Buffer>;
+	writeBuffer(options?: Partial<CsvWriteOptions>): Promise<Buffer>;
 
 	/**
 	 * write to a file
